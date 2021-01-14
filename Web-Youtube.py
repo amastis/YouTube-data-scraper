@@ -120,7 +120,6 @@ if __name__ == "__main__":
 		title_id = 'video-title-link'
 		csv_title = 'YouTube Homepage.csv'
 		driver.get(youtube_link)
-		scroll_amount = 0
 	elif 'v=' in youtube_link: # single YouTube video
 		scroll_amount = 0
 		single_video = True
