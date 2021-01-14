@@ -1,8 +1,11 @@
 # YouTube data scraper
 
+To easily scrape any data from the youtube homepage, a youtube channel/user, search results, playlists, and a single video itself.
+
 ## Help Menu
-'''bash
-(base) Vortex:YouTube Vortex$ python3 Web-Youtube.py
+
+```bash
+$ python3 Web-Youtube.py -h
 Usage: Web-Youtube.py [OPTIONS]
 	--link		 	YouTube link
 	--api	 		Google/YouTube API key
@@ -23,4 +26,15 @@ Supported YouTube Link Styles:
 	https://www.youtube.com/watch?v=x9dgZQsjR6s
 
 Works with: YouTube Homepage, youtube search, channel/user, video, and playlists
-'''
+```
+
+## Sample Output
+
+```bash
+$ python3 Web-Youtube.py --link https://www.youtube.com/watch?v=x9dgZQsjR6s --api 6d5f807e23db210bc254a28be2d6759a0f5f5d99 --comments
+ 
+[WDM] - Current google-chrome version is 87.0.4280
+[WDM] - Get LATEST driver version for 87.0.4280
+[WDM] - Driver [/Users/me/.wdm/drivers/chromedriver/87.0.4280.88/chromedriver] found in cache
+downloaded Art of War & Strategic Thinking for Entrepreneurs in 2020.csv
+```
