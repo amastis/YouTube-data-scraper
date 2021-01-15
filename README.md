@@ -2,6 +2,7 @@
 
 To easily scrape any data from the youtube homepage, a youtube channel/user, search results, playlists, and a single video itself.
 
+
 ## Help Menu
 
 ```bash
@@ -38,3 +39,10 @@ $ python3 Web-Youtube.py --link https://www.youtube.com/watch?v=x9dgZQsjR6s --ap
 [WDM] - Driver [/Users/me/.wdm/drivers/chromedriver/87.0.4280.88/chromedriver] found in cache
 downloaded Art of War & Strategic Thinking for Entrepreneurs in 2020.csv
 ```
+
+
+## Get your YouTube API Key
+
+Video tutorial: https://www.youtube.com/watch?v=TE66McLMMEw
+
+Medium tutorial: (follow steps 1-3 no need to install the module) https://medium.com/greyatom/youtube-data-in-python-6147160c5833
