@@ -37,6 +37,8 @@ $ python3 Web-Youtube.py --link https://www.youtube.com/watch?v=x9dgZQsjR6s --ap
 [WDM] - Current google-chrome version is 87.0.4280
 [WDM] - Get LATEST driver version for 87.0.4280
 [WDM] - Driver [/Users/me/.wdm/drivers/chromedriver/87.0.4280.88/chromedriver] found in cache
+Navigating Youtube: |██████████████████████████████████████████████████| 100.0% 
+Processing Videos: |██████████████████████████████████████████████████| 100.0% 
 downloaded Art of War & Strategic Thinking for Entrepreneurs in 2020.csv
 ```
 
