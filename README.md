@@ -1,6 +1,7 @@
 # YouTube data scraper
 
 To easily scrape any data from the youtube homepage, a youtube channel/user, search results, playlists, and a single video itself.
+Requires Python 3.6+
 
 
 ## Help Menu
