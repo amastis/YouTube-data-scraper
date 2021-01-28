@@ -30,6 +30,11 @@ Supported YouTube Link Styles:
 Works with: YouTube Homepage, youtube search, channel/user, video, and playlists
 ```
 
+## Installing
+```bash
+$ pip3 install -r requirements.txt
+```
+
 ## Sample Output
 
 ```bash
