@@ -1,0 +1,17 @@
+beautifulsoup4==4.9.3
+certifi==2020.12.5
+chardet==4.0.0
+colorama==0.4.4
+configparser==5.0.1
+crayons==0.4.0
+idna==2.10
+numpy==1.19.5
+pandas==1.1.5
+python-dateutil==2.8.1
+pytz==2020.5
+requests==2.25.1
+selenium==3.141.0
+six==1.15.0
+soupsieve==2.1
+urllib3==1.26.3
+webdriver-manager==3.3.0
