@@ -3,6 +3,10 @@
 To easily scrape any data from the youtube homepage, a youtube channel/user, search results, playlists, and a single video itself.
 Requires Python 3.6+
 
+## Installing
+```bash
+$ pip3 install -r requirements.txt
+```
 
 ## Help Menu
 
@@ -30,10 +34,6 @@ Supported YouTube Link Styles:
 Works with: YouTube Homepage, youtube search, channel/user, video, and playlists
 ```
 
-## Installing
-```bash
-$ pip3 install -r requirements.txt
-```
 
 ## Sample Output
 
