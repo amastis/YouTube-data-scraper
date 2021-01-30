@@ -50,7 +50,6 @@ def youtubeAPI(video_id, api_key, data_dict, commentsOn):
 				while first_run: # or 'nextPageToken' in json_comments:
 					first_run = False
 					json_comments = YT_json('commentThreads', 'part=snippet,replies', f'videoId={video_id}', api_key, next_pg)
-					sys.exit(-1)
 					for item in json_comments['items']:
 						cData = item['snippet']['topLevelComment']['snippet']
 						comment = [item['id'], cData['textOriginal'], cData['authorDisplayName'], cData['authorChannelUrl'], cData['likeCount'], cData['publishedAt'], cData['updatedAt'], item['snippet']['topLevelComment']['id']]
