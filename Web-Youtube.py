@@ -42,14 +42,15 @@ def youtubeAPI(video_id, api_key, data_dict, commentsOn):
 		if 'commentCount' in statistics and int(statistics['commentCount']) > 0:
 			data_dict['comment_number'] = statistics['commentCount']
 			if commentsOn:  # cycle through the various comments on the video
-				json_comments = YT_json('commentThreads', 'part=id,snippet,replies', f'videoId={video_id}', api_key)
 				commentSetup = ['comment_id', 'comment', 'comment_author', 'comment_author_url', 'comment_likes', 'comment_published', 'comment_updated_time', 'parent_comment']
 				allComments.append(commentSetup)
 				next_pg = ''
 				comments_with_replies = []
 				first_run = True
-				while first_run or 'nextPageToken' in json_comments:
+				while first_run: # or 'nextPageToken' in json_comments:
 					first_run = False
+					json_comments = YT_json('commentThreads', 'part=snippet,replies', f'videoId={video_id}', api_key, next_pg)
+					sys.exit(-1)
 					for item in json_comments['items']:
 						cData = item['snippet']['topLevelComment']['snippet']
 						comment = [item['id'], cData['textOriginal'], cData['authorDisplayName'], cData['authorChannelUrl'], cData['likeCount'], cData['publishedAt'], cData['updatedAt'], item['snippet']['topLevelComment']['id']]
@@ -59,19 +60,19 @@ def youtubeAPI(video_id, api_key, data_dict, commentsOn):
 					if 'nextPageToken' in json_comments:
 						first_run = True
 						next_pg = json_comments['nextPageToken']
-						json_comments = YT_json('commentThreads', 'part=snippet,replies', f'videoId={video_id}', api_key, next_pg)
-				for comment_id in comments_with_replies:
-					json_comments = YT_json('comments', 'part=snippet', f'parentId={comment_id}', api_key)
-					page_Total_Results = len(json_comments['items'])
-					for i in range(page_Total_Results):
-						cData = json_comments['items'][i]['snippet']
-						comment = [json_comments['items'][i]['id'], cData['textOriginal'], cData['authorDisplayName'], cData['authorChannelUrl'], cData['likeCount'], cData['publishedAt'], cData['updatedAt'], cData['parentId']]
-						allComments.append(comment)
-						if i == page_Total_Results - 1 and 'nextPageToken' in json_comments:
+				for comment_id in comments_with_repli es:
+  					next_pg = ''
+				 	first_run = True
+					while first_run: 
+						first_run = False
+						json_comments = YT_json('comments', 'part=snippet', f'parentId={comment_id}', api_key, next_pg)
+						for item in json_comments['items']:
+							cData = item['snippet']
+							comment = [item['id'], cData['textOriginal'], cData['authorDisplayName'], cData['authorChannelUrl'], cData['likeCount'], cData['publishedAt'], cData['updatedAt'], cData['parentId']]
+							allComments.append(comment)
+						if 'nextPageToken' in json_comments:
+							first_run = True
 							next_pg = json_comments['nextPageToken']
-							json_comments = YT_json('comments', 'snippet', f'parentId={comment_id}', api_key, next_pg)
-							i = 0
-							page_Total_Results = len(json_comments['items'])
 		else:
 			data_dict['comment_number'] = 0
 		snippet = json_response['items'][0]['snippet']
@@ -176,17 +177,17 @@ if __name__ == "__main__":
 			data_dict = {}
 			# get title
 			data_dict['title'] = video.find('a', {'id': title_id}).text.replace('\n', '')
-			printProgressBar(videos.index(video) + 1, len(videos), 'Processing Videos:', length=50)
 			# get video url + use id for youtube API
 			video_id = video.find('a', {'id': title_id})['href'].split('=')[1]
 			data_dict, data_dict['comments'] = youtubeAPI(video_id, api_key, data_dict, commentsOn)
 			master_list.append(data_dict)
+			printProgressBar(videos.index(video) + 1, len(videos), 'Processing Videos:', length=50)
 	elif single_video:
 		data_dict = {}
 		data_dict['title'] = soup.find('meta', {'name': 'title'})['content']
 		title = data_dict['title'] + '.csv'
 		data_dict, temp_item = youtubeAPI(yt_link.split('=')[1], api_key, data_dict, commentsOn)
-		for i in range(1, len(temp_item)):
+		for i in range(1, len(temp_item)):  # splitting up comments to their own row
 			for j in range(len(temp_item[0])):
 				data_dict[temp_item[0][j]] = temp_item[i][j]
 			master_list.append(data_dict)
@@ -197,12 +198,12 @@ if __name__ == "__main__":
 		for video in videos:
 			data_dict = {}
 			# get title
-			data_dict['title'] = video.find('span', {'id': 'video-title'})['title']
-			printProgressBar(videos.index(video) + 1, len(videos), 'Processing Videos:', length=50)
+			data_dict['title'] = video.find('a', {'id': 'video-title'})['title']
 			# get video url + use id for youtube API
 			video_id = getIDFromLink(video.find('a', {'class': 'yt-simple-endpoint'})['href'], 'v=')
 			data_dict, data_dict['comments'] = youtubeAPI(video_id, api_key, data_dict, commentsOn)
 			master_list.append(data_dict)
+			printProgressBar(videos.index(video) + 1, len(videos), 'Processing Videos:', length=50)
 
 	print('')  # new line for downloaded file
 	driver.close()
