@@ -21,10 +21,40 @@ def YT_json(directory, parts, item_id, api_key, new_Page_Token=''):
 	url = f'https://www.googleapis.com/youtube/v3/{directory}?{parts}&{item_id}{api_key}'
 	if new_Page_Token:
 		url += f'&pageToken={new_Page_Token}'
-	elif directory != 'videos' and directory != 'channels':
+	if directory != 'videos' and directory != 'channels':
 		url += '&maxResults=100'
-
 	return requests.get(url).json()
+
+# get commentThreads and comment replies from the video 
+def getComments(d_type, vid_type, api_key, parts='part=snippet', parent='id'):
+	first_run, is_thread = True, d_type == 'Thread'
+	if is_thread:
+		parts, parent = parts + ',replies', 'id'
+	next_pg = ''
+	all_comments, comments_with_replies = [], []
+	json_data = []
+	while first_run: # or 'nextPageToken' in json_comments:
+		first_run = False
+		json_comments = YT_json(f'comment{d_type}s', parts, vid_type, api_key, next_pg)
+		json_data += json_comments['items']
+		if 'nextPageToken' in json_comments:
+			first_run = True
+			next_pg = json_comments['nextPageToken']
+	for item in json_data:
+			cData = item['snippet']  # comments
+			if is_thread: 
+				cData = item['snippet']['topLevelComment']['snippet']  # commentThreads
+				reply_num = int(item['snippet']['totalReplyCount'])
+				if reply_num < 6 and 'replies' in item:  # add comments (available w/ response)
+					for n_item in item['replies']['comments']:
+						cmData = n_item['snippet']
+						comment = [n_item['id'], cmData['textOriginal'], cmData['authorDisplayName'], cmData['authorChannelUrl'], cmData['likeCount'], cmData['publishedAt'], cmData['updatedAt'], item[parent]]
+						all_comments.append(comment)
+				elif 'replies' in item:
+					comments_with_replies.append(item['id']) 
+			comment = [item['id'], cData['textOriginal'], cData['authorDisplayName'], cData['authorChannelUrl'], cData['likeCount'], cData['publishedAt'], cData['updatedAt'], item[parent]]
+			all_comments.append(comment)
+	return all_comments, comments_with_replies
 
 # youtube API to get more specific information about the video
 def youtubeAPI(video_id, api_key, data_dict, commentsOn):
@@ -44,34 +74,13 @@ def youtubeAPI(video_id, api_key, data_dict, commentsOn):
 			if commentsOn:  # cycle through the various comments on the video
 				commentSetup = ['comment_id', 'comment', 'comment_author', 'comment_author_url', 'comment_likes', 'comment_published', 'comment_updated_time', 'parent_comment']
 				allComments.append(commentSetup)
-				next_pg = ''
-				comments_with_replies = []
-				first_run = True
-				while first_run: # or 'nextPageToken' in json_comments:
-					first_run = False
-					json_comments = YT_json('commentThreads', 'part=snippet,replies', f'videoId={video_id}', api_key, next_pg)
-					for item in json_comments['items']:
-						cData = item['snippet']['topLevelComment']['snippet']
-						comment = [item['id'], cData['textOriginal'], cData['authorDisplayName'], cData['authorChannelUrl'], cData['likeCount'], cData['publishedAt'], cData['updatedAt'], item['snippet']['topLevelComment']['id']]
-						allComments.append(comment)
-						if int(item['snippet']['totalReplyCount']) > 0:
-							comments_with_replies.append(item['id'])
-					if 'nextPageToken' in json_comments:
-						first_run = True
-						next_pg = json_comments['nextPageToken']
-				for comment_id in comments_with_repli es:
-  					next_pg = ''
-				 	first_run = True
-					while first_run: 
-						first_run = False
-						json_comments = YT_json('comments', 'part=snippet', f'parentId={comment_id}', api_key, next_pg)
-						for item in json_comments['items']:
-							cData = item['snippet']
-							comment = [item['id'], cData['textOriginal'], cData['authorDisplayName'], cData['authorChannelUrl'], cData['likeCount'], cData['publishedAt'], cData['updatedAt'], cData['parentId']]
-							allComments.append(comment)
-						if 'nextPageToken' in json_comments:
-							first_run = True
-							next_pg = json_comments['nextPageToken']
+				temp_data, c_replies = getComments('Thread', f'videoId={video_id}',  api_key)
+				allComments += temp_data
+				comments_with_replies = c_replies
+				# comments that have more replies than can obtain via thread replies
+				for comment_id in comments_with_replies:
+  					temp_data, _ = getComments('', f'parentId={comment_id}', api_key)
+  					allComments += temp_data
 		else:
 			data_dict['comment_number'] = 0
 		snippet = json_response['items'][0]['snippet']
@@ -187,8 +196,8 @@ if __name__ == "__main__":
 		title = data_dict['title'] + '.csv'
 		data_dict, temp_item = youtubeAPI(yt_link.split('=')[1], api_key, data_dict, commentsOn)
 		for i in range(1, len(temp_item)):  # splitting up comments to their own row
-			for j in range(len(temp_item[0])):
-				data_dict[temp_item[0][j]] = temp_item[i][j]
+			for j, data_item in enumerate(temp_item[i]):
+				data_dict[temp_item[0][j]] = data_item
 			master_list.append(data_dict)
 			data_dict = {}
 	else:  # works for playlist
@@ -197,7 +206,7 @@ if __name__ == "__main__":
 		for video in videos:
 			data_dict = {}
 			# get title
-			data_dict['title'] = video.find('a', {'id': 'video-title'})['title']
+			data_dict['title'] = video.find('a', {'id': 'video-title'})['title']  # was a 'span'
 			# get video url + use id for youtube API
 			video_id = getIDFromLink(video.find('a', {'class': 'yt-simple-endpoint'})['href'], 'v=')
 			data_dict, data_dict['comments'] = youtubeAPI(video_id, api_key, data_dict, commentsOn)
