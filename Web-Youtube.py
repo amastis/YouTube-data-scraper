@@ -41,19 +41,18 @@ def getComments(d_type, vid_type, api_key, parts='part=snippet', parent='id'):
 			first_run = True
 			next_pg = json_comments['nextPageToken']
 	for item in json_data:
-			cData = item['snippet']  # comments
-			if is_thread: 
-				cData = item['snippet']['topLevelComment']['snippet']  # commentThreads
-				reply_num = int(item['snippet']['totalReplyCount'])
-				if reply_num < 6 and 'replies' in item:  # add comments (available w/ response)
-					for n_item in item['replies']['comments']:
-						cmData = n_item['snippet']
-						comment = [n_item['id'], cmData['textOriginal'], cmData['authorDisplayName'], cmData['authorChannelUrl'], cmData['likeCount'], cmData['publishedAt'], cmData['updatedAt'], item[parent]]
-						all_comments.append(comment)
-				elif 'replies' in item:
-					comments_with_replies.append(item['id']) 
-			comment = [item['id'], cData['textOriginal'], cData['authorDisplayName'], cData['authorChannelUrl'], cData['likeCount'], cData['publishedAt'], cData['updatedAt'], item[parent]]
-			all_comments.append(comment)
+		cData = item['snippet']  # comments
+		if is_thread: 
+			cData = item['snippet']['topLevelComment']['snippet']  # commentThreads
+			reply_num = int(item['snippet']['totalReplyCount'])
+			if reply_num < 6 and 'replies' in item:  # add comments (available w/ response)
+				for n_item in item['replies']['comments']:
+					cmData = n_item['snippet']
+					comment = [n_item['id'], cmData['textOriginal'], cmData['authorDisplayName'], cmData['authorChannelUrl'], cmData['likeCount'], cmData['publishedAt'], cmData['updatedAt'], item[parent]]
+					all_comments.append(comment)
+			elif 'replies' in item:
+				comments_with_replies.append(item['id']) 
+		comment = [item['id'], cData['textOriginal'], cData['authorDisplayName'], cData['authorChannelUrl'], cData['likeCount'], cData['publishedAt'], cData['updatedAt'], item[parent]]			all_comments.append(comment)
 	return all_comments, comments_with_replies
 
 # youtube API to get more specific information about the video
