@@ -195,8 +195,8 @@ if __name__ == "__main__":
 		title = data_dict['title'] + '.csv'
 		data_dict, temp_item = youtubeAPI(yt_link.split('=')[1], api_key, data_dict, commentsOn)
 		for i in range(1, len(temp_item)):  # splitting up comments to their own row
-			for j, data_item in enumerate(temp_item[i]):
-				data_dict[temp_item[0][j]] = data_item
+			for j, elm in enumerate(temp_item[i]):
+				data_dict[temp_item[0][j]] = elm.replace('\r', '\\r') if type(elm) == str else elm
 			master_list.append(data_dict)
 			data_dict = {}
 	else:  # works for playlist
