@@ -8,12 +8,13 @@ def usage():
 	print("\t--link		 \tYouTube link")
 	print("\t--api	 	\tGoogle/YouTube API key")
 	print("\t--comments		Get comments from YouTube videos")
+	print("\t--seconds		Get seconds from YouTube video duration")
 	print("\t\t\t\t   [turning on will increase program run time]")
 	print("\t--version       \tList version release")
 	print("\t--help          \tThis help menu\n")
 
 	print("Example:")
-	print("\t" + sys.argv[0] + " --link [youtube_link] --api [your_api_key] --comments")
+	print("\t" + sys.argv[0] + " --link [youtube_link] --api [your_api_key] --comments --seconds")
 
 	print("\nSupported YouTube Link Styles:")
 	print("\thttps://www.youtube.com/")
@@ -31,9 +32,10 @@ def getCommands():
 	youtube_link = None
 	api_key = None
 	commentsOn = False
+	secondsOn = False
 
-	try:
-		opts, args = getopt.getopt(sys.argv[1:], "l:a:chv", ["link=", "api=", "comments", "help", "version"])
+	try: # replace "l:a:cshv", ["link=",
+		opts, args = getopt.getopt(sys.argv[1:], "l:a:cshv", ["link=", "api=", "comments", "seconds", "help", "version"])
 	except getopt.GetoptError:#, err:
 		# print help information and exit:
 		print(err) # will print something like "option -a not recognized"
@@ -46,6 +48,8 @@ def getCommands():
 			api_key = a
 		elif o in ("-c", "--comments"):
 			commentsOn = True
+		elif o in ("-s", "--seconds"):
+			secondsOn = True
 		elif o in ("-h", "--help"):
 			usage()
 			sys.exit()
@@ -56,7 +60,7 @@ def getCommands():
 			assert False, "unhandled option"
 			sys.exit(-1)
 
-	if youtube_link == None or 'https://www.youtube.com' not in youtube_link or api_key == None:
+	if api_key == None or youtube_link == None or 'https://www.youtube.com' not in youtube_link:
 		usage()
 
-	return youtube_link, api_key, commentsOn
+	return youtube_link, api_key, commentsOn, secondsOn
