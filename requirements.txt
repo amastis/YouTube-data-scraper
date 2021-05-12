@@ -1,9 +1,5 @@
 beautifulsoup4==4.9.3
-certifi==2020.12.5
-chardet==4.0.0
-colorama==0.4.4
 configparser==5.0.1
-crayons==0.4.0
 idna==2.10
 pandas==1.1.5
 python-dateutil==2.8.1
