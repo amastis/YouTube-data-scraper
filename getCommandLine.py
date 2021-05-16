@@ -3,8 +3,20 @@ import getopt
 
 VERSION = "1.0"
 
+def supportedStyles():
+	print("\nSupported YouTube Link Styles:")
+	print("\thttps://www.youtube.com/")
+	print("\thttps://www.youtube.com/results?search_query=valuetainment")
+	print("\thttps://www.youtube.com/user/patrickbetdavid")
+	print("\thttps://www.youtube.com/channel/UCGX7nGXpz-CmO_Arg-cgJ7A")
+	print("\thttps://www.youtube.com/watch?v=Z2UmjJ2zQkg&list=PLFa0bDwXvBlDGFtce9u__1sBj6fgi21BE")
+	print("\thttps://www.youtube.com/watch?v=x9dgZQsjR6s")
+	print('\thttps://www.youtube.com/playlist?list=PLFa0bDwXvBlDGFtce9u__1sBj6fgi21BE')
+	sys.exit(1)
+
 def usage():
-	print("Usage: " +  sys.argv[0] + " [OPTIONS]")
+	print("Works with: YouTube Homepage, youtube search, channel/user, video, and playlists")
+	print("\n\nUsage: " +  sys.argv[0] + " [OPTIONS]")
 	print("\t--link		 \tYouTube link")
 	print("\t--api	 	\tGoogle/YouTube API key")
 	print("\t--comments		Get comments from YouTube videos")
@@ -15,17 +27,7 @@ def usage():
 
 	print("Example:")
 	print("\t" + sys.argv[0] + " --link [youtube_link] --api [your_api_key] --comments --seconds")
-
-	print("\nSupported YouTube Link Styles:")
-	print("\thttps://www.youtube.com/")
-	print("\thttps://www.youtube.com/results?search_query=valuetainment")
-	print("\thttps://www.youtube.com/user/patrickbetdavid")
-	print("\thttps://www.youtube.com/channel/UCGX7nGXpz-CmO_Arg-cgJ7A")
-	print("\thttps://www.youtube.com/watch?v=Z2UmjJ2zQkg&list=PLFa0bDwXvBlDGFtce9u__1sBj6fgi21BE")
-	print("\thttps://www.youtube.com/watch?v=x9dgZQsjR6s")
-
-	print("\nWorks with: YouTube Homepage, youtube search, channel/user, video, and playlists")
-	sys.exit(1)
+	supportedStyles()
 
 def getCommands():
 
@@ -35,9 +37,8 @@ def getCommands():
 	secondsOn = False
 
 	try: # replace "l:a:cshv", ["link=",
-		opts, args = getopt.getopt(sys.argv[1:], "l:a:cshv", ["link=", "api=", "comments", "seconds", "help", "version"])
-	except getopt.GetoptError:#, err:
-		# print help information and exit:
+		opts, args = getopt.getopt(sys.argv[1:], "l:a:csdhv", ["link=", "api=", "comments", "subtitles", "durationseconds", "help", "version"])
+	except getopt.GetoptError: # print help information and exit:
 		print(err) # will print something like "option -a not recognized"
 		sys.exit(-1)
 
@@ -48,7 +49,9 @@ def getCommands():
 			api_key = a
 		elif o in ("-c", "--comments"):
 			commentsOn = True
-		elif o in ("-s", "--seconds"):
+		elif o in ("-s", "--subtitles"):
+			subtitilesOn = True
+		elif o in ("-d", "--durationseconds"):
 			secondsOn = True
 		elif o in ("-h", "--help"):
 			usage()
@@ -62,5 +65,6 @@ def getCommands():
 
 	if api_key == None or youtube_link == None or 'https://www.youtube.com' not in youtube_link:
 		usage()
+	options = {'cmtOn': commentsOn, 'subOn': subtitilesOn, 'secOn': secondsOn}
 
-	return youtube_link, api_key, commentsOn, secondsOn
+	return youtube_link, api_key, options
