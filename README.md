@@ -12,16 +12,21 @@ $ pip3 install -r requirements.txt
 
 ```bash
 $ python3 Web-Youtube.py -h
+Works with: YouTube Homepage, youtube search, channel/user, video, and playlists
+
+
 Usage: Web-Youtube.py [OPTIONS]
 	--link		 	YouTube link
 	--api	 		Google/YouTube API key
 	--comments		Get comments from YouTube videos
 				   [turning on will increase program run time]
+	--subtitles		Get subtitles from YouTube videos
+	--durationseconds	Get seconds from YouTube video duration
 	--version       	List version release
 	--help          	This help menu
 
 Example:
-	Web-Youtube.py --link [youtube_link] --api [your_api_key] --comments
+	Web-Youtube.py --link [youtube_link] --api [your_api_key] --comments --subtitles --durationseconds
 
 Supported YouTube Link Styles:
 	https://www.youtube.com/
@@ -30,8 +35,7 @@ Supported YouTube Link Styles:
 	https://www.youtube.com/channel/UCGX7nGXpz-CmO_Arg-cgJ7A
 	https://www.youtube.com/watch?v=Z2UmjJ2zQkg&list=PLFa0bDwXvBlDGFtce9u__1sBj6fgi21BE
 	https://www.youtube.com/watch?v=x9dgZQsjR6s
-
-Works with: YouTube Homepage, youtube search, channel/user, video, and playlists
+	https://www.youtube.com/playlist?list=PLFa0bDwXvBlDGFtce9u__1sBj6fgi21BE
 ```
 
 
