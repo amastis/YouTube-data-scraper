@@ -20,13 +20,14 @@ def usage():
 	print("\t--link		 \tYouTube link")
 	print("\t--api	 	\tGoogle/YouTube API key")
 	print("\t--comments		Get comments from YouTube videos")
-	print("\t--seconds		Get seconds from YouTube video duration")
 	print("\t\t\t\t   [turning on will increase program run time]")
+	print("\t--subtitles		Get subtitles from YouTube videos")
+	print("\t--durationseconds		Get seconds from YouTube video duration")
 	print("\t--version       \tList version release")
 	print("\t--help          \tThis help menu\n")
 
 	print("Example:")
-	print("\t" + sys.argv[0] + " --link [youtube_link] --api [your_api_key] --comments --seconds")
+	print("\t" + sys.argv[0] + " --link [youtube_link] --api [your_api_key] --comments --subtitles --durationseconds")
 	supportedStyles()
 
 def getCommands():
