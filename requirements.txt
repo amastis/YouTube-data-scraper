@@ -10,3 +10,4 @@ six==1.15.0
 soupsieve==2.1
 urllib3==1.26.3
 webdriver-manager==3.3.0
+youtube-transcript-api==0.4.1
