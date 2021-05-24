@@ -22,7 +22,7 @@ def usage():
 	print("\t--comments		Get comments from YouTube videos")
 	print("\t\t\t\t   [turning on will increase program run time]")
 	print("\t--subtitles		Get subtitles from YouTube videos")
-	print("\t--durationseconds		Get seconds from YouTube video duration")
+	print("\t--durationseconds	Get seconds from YouTube video duration")
 	print("\t--version       \tList version release")
 	print("\t--help          \tThis help menu\n")
 
@@ -32,10 +32,8 @@ def usage():
 
 def getCommands():
 
-	youtube_link = None
-	api_key = None
-	commentsOn = False
-	secondsOn = False
+	youtube_link, api_key = None, None
+	commentsOn, subtitilesOn, secondsOn = False, False, False
 
 	try: # replace "l:a:cshv", ["link=",
 		opts, args = getopt.getopt(sys.argv[1:], "l:a:csdhv", ["link=", "api=", "comments", "subtitles", "durationseconds", "help", "version"])
