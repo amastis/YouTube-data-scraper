@@ -18,7 +18,7 @@ from getCommandLine import getCommands, supportedStyles
 
 
 # parts and item_id will have to be properly formmated
-def YT_json(directory, parts, item_id, api_key, new_Page_Token=''):  # will need to add try except block here in case request timeouts
+def YT_json(directory, parts, item_id, api_key, new_Page_Token=''):  # add try except block for request timeouts
 	url = f'https://www.googleapis.com/youtube/v3/{directory}?{parts}&{item_id}{api_key}'
 	if new_Page_Token:
 		url += f'&pageToken={new_Page_Token}'
@@ -56,6 +56,7 @@ def getComments(d_type, vid_type, api_key, parts='part=snippet', parent='id'):
 			if reply_num < 6 and 'replies' in item:  # add comments (available w/ response)
 				for n_item in item['replies']['comments']:
 					all_comments.append(commentData(n_item, n_item['snippet'], item[parent]))
+				#all_cmnts = [cmntData(elm, elm['snippet'], item[parent]) for elm in item['replies']['comments']]
 			elif 'replies' in item:
 				comments_with_replies.append(item['id']) 
 		all_comments.append(commentData(item, cData, item[parent]))
@@ -130,9 +131,7 @@ def getCaptions(vid_id):
 		captions = YouTubeTranscriptApi.get_transcript(vid_id)
 	except:
 		return ""
-	totalCaptions = ""
-	for item in captions:
-		totalCaptions += item['text'] + " "
+	totalCaptions = " ".join([item['text'] for item in captions])
 	return totalCaptions
 
 # main function to get all of the data from the videos 
@@ -245,3 +244,4 @@ if __name__ == "__main__":
 		youtube_df = pd.DataFrame(master_list)
 		youtube_df.to_csv(str(Path.home() / "Downloads/") + '/' + title, index=False)
 		print('downloaded', title)
+		
