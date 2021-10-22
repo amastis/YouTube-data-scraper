@@ -3,7 +3,9 @@ import getopt
 
 VERSION = "1.0"
 
-def supportedStyles():
+def supportedStyles(link: str = None):
+	if link:
+		print(f'Error: link style not supported\n\t{link}\n')
 	print("\nSupported YouTube Link Styles:")
 	print("\thttps://www.youtube.com/")
 	print("\thttps://www.youtube.com/results?search_query=valuetainment")
@@ -12,7 +14,6 @@ def supportedStyles():
 	print("\thttps://www.youtube.com/watch?v=Z2UmjJ2zQkg&list=PLFa0bDwXvBlDGFtce9u__1sBj6fgi21BE")
 	print("\thttps://www.youtube.com/watch?v=x9dgZQsjR6s")
 	print('\thttps://www.youtube.com/playlist?list=PLFa0bDwXvBlDGFtce9u__1sBj6fgi21BE')
-	sys.exit(1)
 
 def usage():
 	print("Works with: YouTube Homepage, youtube search, channel/user, video, and playlists")
@@ -29,6 +30,7 @@ def usage():
 	print("Example:")
 	print("\t" + sys.argv[0] + " --link [youtube_link] --api [your_api_key] --comments --subtitles --durationseconds")
 	supportedStyles()
+	sys.exit(1)
 
 def getCommands():
 
@@ -62,7 +64,7 @@ def getCommands():
 			assert False, "unhandled option"
 			sys.exit(-1)
 
-	if api_key == None or youtube_link == None or 'https://www.youtube.com' not in youtube_link:
+	if not api_key or not youtube_link or 'www.youtube.com' not in youtube_link:
 		usage()
 	options = {'cmtOn': commentsOn, 'subOn': subtitilesOn, 'secOn': secondsOn}
 
