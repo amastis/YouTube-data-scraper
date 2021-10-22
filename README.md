@@ -26,7 +26,7 @@ Usage: Web-Youtube.py [OPTIONS]
 	--help          	This help menu
 
 Example:
-	Web-Youtube.py --link "youtube_link(s)" --api [your_api_key] --comments --subtitles --durationseconds
+	Web-Youtube.py --link "[your_youtube_link(s)]" --api [your_api_key] --comments --subtitles --durationseconds
 
 Supported YouTube Link Styles:
 	https://www.youtube.com/
