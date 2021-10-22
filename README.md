@@ -16,7 +16,7 @@ Works with: YouTube Homepage, youtube search, channel/user, video, and playlists
 
 
 Usage: Web-Youtube.py [OPTIONS]
-	--link		 	YouTube link
+	--link		 	YouTube link(s)
 	--api	 		Google/YouTube API key
 	--comments		Get comments from YouTube videos
 				   [turning on will increase program run time]
@@ -26,7 +26,7 @@ Usage: Web-Youtube.py [OPTIONS]
 	--help          	This help menu
 
 Example:
-	Web-Youtube.py --link [youtube_link] --api [your_api_key] --comments --subtitles --durationseconds
+	Web-Youtube.py --link "youtube_link(s)" --api [your_api_key] --comments --subtitles --durationseconds
 
 Supported YouTube Link Styles:
 	https://www.youtube.com/
@@ -42,7 +42,7 @@ Supported YouTube Link Styles:
 ## Sample Output
 
 ```bash
-$ python3 Web-Youtube.py --link https://www.youtube.com/watch?v=x9dgZQsjR6s --api 6d5f807e23db210bc254a28be2d6759a0f5f5d99 --comments
+$ python3 Web-Youtube.py --link "https://www.youtube.com/watch?v=x9dgZQsjR6s" --api 6d5f807e23db210bc254a28be2d6759a0f5f5d99 --comments
  
 [WDM] - Current google-chrome version is 87.0.4280
 [WDM] - Get LATEST driver version for 87.0.4280
