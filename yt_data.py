@@ -44,7 +44,6 @@ class Youtube():
         if directory != 'videos' and directory != 'channels':
             url += '&maxResults=100'
         try:
-            print(type(requests.get(url).json()))
             json_response = requests.get(url).json()
         except:
             return self._YT_json(directory, parts, item_id, new_Page_Token)
