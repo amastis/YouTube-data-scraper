@@ -37,7 +37,7 @@ def main() -> None:
 				driver.get(yt_link)
 				channel = driver.find_element_by_xpath('/html/body/link[1]').get_attribute('href')
 				user_or_channel += getLinkID(channel, '/')
-			json_response = YT_json('channels', 'part=id,statistics', user_or_channel, api_key)
+			json_response = scraper._YT_json('channels', 'part=id,statistics', user_or_channel)
 			scroll_amnt = int(int(json_response['items'][0]['statistics']['videoCount']) / 30) + 1
 			driver.get(f'https://www.youtube.com/{split_link[3]}/{user_id}/videos')  # update channel
 			title = driver.find_element_by_xpath('//*[@id="text-container"]').text + '.csv'
