@@ -35,6 +35,7 @@ class Youtube():
     def __init__(self, api_key, data_options):
         self.api_key = api_key
         self.data_opt = data_options
+        self.session = requests.Session()
 
     # parts and item_id will have to be properly formmated
     def _YT_json(self, directory: str, parts: str, item_id: str, new_Page_Token: str = '') -> dict:
@@ -44,7 +45,7 @@ class Youtube():
         if directory != 'videos' and directory != 'channels':
             url += '&maxResults=100'
         try:
-            json_response = requests.get(url).json()
+            json_response = self.session.get(url).json()
         except:
             return self._YT_json(directory, parts, item_id, new_Page_Token)
         return json_response
@@ -160,3 +161,4 @@ class Youtube():
                 break
             final_list.append(data_dict)
         return final_list
+    
