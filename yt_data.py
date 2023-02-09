@@ -1,91 +1,114 @@
-import requests
-import isodate
+''' get and parse all of youtube request/response cycle asked for by user '''
 import json
 import logging
 import re
-from typing import Tuple
+from typing import Tuple, List, Dict, Any
+
+# other modules
+import isodate
+import requests
 from youtube_transcript_api import YouTubeTranscriptApi
 from tqdm import tqdm  # progress bars
-from bs4 import BeautifulSoup
 
 logging.basicConfig(format='%(levelname)s - %(name)s - %(message)s') #, level=logging.DEBUG)
 
-COMMENT_LABELS = ['comment_id', 'comment', 'comment_author', 'comment_author_url', 'comment_likes', 'comment_published', 'comment_updated_time', 'parent_comment']
+COMMENT_LABELS = ['comment_id',
+                  'comment',
+                  'comment_author',
+                  'comment_author_url',
+                  'comment_likes',
+                  'comment_published',
+                  'comment_updated_time',
+                  'parent_comment']
 
-# combines all comment meta data into a single array
-def _commentData(item: dict, cData: dict, parent: str) -> list:
-    return [item['id'], cData['textOriginal'], cData['authorDisplayName'], cData['authorChannelUrl'], cData['likeCount'], cData['publishedAt'], cData['updatedAt'], parent]
+def _comment_data(item: dict, comment_data: dict, parent: str) -> List[str]:
+    # combines all comment meta data into a single list
+    return [item['id'],
+            comment_data['textOriginal'],
+            comment_data['authorDisplayName'],
+            comment_data['authorChannelUrl'],
+            comment_data['likeCount'],
+            comment_data['publishedAt'],
+            comment_data['updatedAt'],
+            parent]
 
-def getLinkID(yt_link: str, split_by: str = 'v=') -> str:
+def get_link_id(yt_link: str, split_by: str = 'v=') -> str:
+    ''' returns the link ID from the youtube link given '''
     meta = yt_link.split('?')
     if '&' in meta[-1]:
         meta = [string for string in meta[-1].split('&') if split_by in string]
+    elif 'shorts/' in meta[-1]: # for short videos
+        meta = meta[-1].split('/')
+
     return meta[-1].split(split_by)[-1]
 
-# gets the subtitles / captions from the video that's already generated
-def getCaptions(vid_id: str) -> str:
+def get_captions(vid_id: str) -> str:
+    ''' gets the subtitles / captions from the video that's already generated '''
     try:
-        captions = YouTubeTranscriptApi.get_transcript(vid_id)
-    except:  # no transcript for video
+        captions: List[Dict[str, str]] = YouTubeTranscriptApi.get_transcript(vid_id)
+    except Exception:  # no transcript for video
         return ""
     return " ".join([item['text'] for item in captions])
 
 
 class Youtube():
-    def __init__(self, api_key, data_options):
-        self.api_key = api_key
-        self.data_opt = data_options
+    ''' Interact with the YouTube API to retrive info about the list of videos (by ID) given '''
+    def __init__(self, api_key: str, data_options: Dict[str, bool]):
+        self.api_key: str = api_key
+        self.data_opt: Dict[str, bool] = data_options
         self.session = requests.Session()
 
-    # parts and item_id will have to be properly formmated
-    def _YT_json(self, directory: str, parts: str, item_id: str, new_Page_Token: str = '') -> dict:
-        url = f'https://www.googleapis.com/youtube/v3/{directory}?{parts}&{item_id}{self.api_key}'
-        if new_Page_Token:
-            url += f'&pageToken={new_Page_Token}'
-        if directory != 'videos' and directory != 'channels':
+    def yt_json(self, directory: str, parts: str, item_id: str, new_page_token: str = '') -> dict:
+        ''' format url to send requests and retrieve response
+        parts and item_id will have to be properly formmated '''
+        url: str = f'https://www.googleapis.com/youtube/v3/{directory}?{parts}&{item_id}{self.api_key}'
+        if new_page_token:
+            url += f'&pageToken={new_page_token}'
+        if directory not in ['videos', 'channels']:
             url += '&maxResults=100'
         try:
             json_response = self.session.get(url).json()
-        except:
-            return self._YT_json(directory, parts, item_id, new_Page_Token)
+        except Exception:
+            return self.yt_json(directory, parts, item_id, new_page_token)
         return json_response
 
-    # get commentThreads and comment replies from the video 
-    def _getComments(self, d_type: str, vid_type: str, parts: str = 'part=snippet', parent: str = 'id') -> Tuple[list, list]:
+    # get commentThreads and comment replies from the video
+    def _get_comments(self, d_type: str, vid_type: str, parts: str = 'part=snippet', parent: str = 'id') -> Tuple[list, list]:
+        ''' get commentThreads and comment replies from the video '''
         is_thread, next_pg = d_type == 'Thread', ''
         if is_thread:
             parts, parent = f'{parts},replies', 'id'
         all_comments, comments_with_replies, json_data = [], [], []
         while True:  # or 'nextPageToken' in json_comments:
-            json_comments = self._YT_json(f'comment{d_type}s', parts, vid_type, next_pg)
+            json_comments = self.yt_json(f'comment{d_type}s', parts, vid_type, next_pg)
             if 'items' in json_comments:
                 json_data += json_comments['items']
-            else: 
-                print(json_comments)  # prints errors -> TRY to handle better
+            else:
+                print(json_comments) # prints errors -> TRY to handle better
             if 'nextPageToken' not in json_comments:  # exit loop condition
                 break
             next_pg = json_comments['nextPageToken']
         for item in json_data:
             cData = item['snippet']  # comments
-            if is_thread: 
+            if is_thread:
                 cData = item['snippet']['topLevelComment']['snippet']  # commentThreads
                 reply_num = int(item['snippet']['totalReplyCount'])
                 if reply_num < 6 and 'replies' in item:  # add comments (available w/ response)
                     for n_item in item['replies']['comments']:
-                        all_comments.append(_commentData(n_item, n_item['snippet'], item[parent]))
+                        all_comments.append(_comment_data(n_item, n_item['snippet'], item[parent]))
                     #all_cmnts = [cmntData(elm, elm['snippet'], item[parent]) for elm in item['replies']['comments']]
                 elif 'replies' in item:
-                    comments_with_replies.append(item['id']) 
-            all_comments.append(_commentData(item, cData, item[parent]))
+                    comments_with_replies.append(item['id'])
+            all_comments.append(_comment_data(item, cData, item[parent]))
         return all_comments, comments_with_replies
 
-    # youtube API to get more specific information about the video
-    def _youtubeAPI(self, video_id: str, data_dict: dict) -> Tuple[dict, list]:
-        json_parts = 'part=snippet,statistics,contentDetails,topicDetails'
-        json_response = self._YT_json('videos', json_parts, f'&id={video_id}')
-        allComments = []
-        
-        if 'pageInfo' not in json_response:  # JSON Error is Quota Filled 
+    def _youtube_api(self, video_id: str, data_dict: Dict[str, Any]) -> Tuple[Dict[str, Any], list]:
+        '''  query youtube API to get data from the video_id specified. '''
+        json_parts: str = 'part=snippet,statistics,contentDetails,topicDetails'
+        json_response = self.yt_json('videos', json_parts, f'&id={video_id}')
+        allComments = None#[]
+
+        if 'pageInfo' not in json_response:  # JSON Error is Quota Filled
             raise ValueError
         if int(json_response['pageInfo']['totalResults']) > 0:  # for deleted & priv vids in playlists
             statistics = json_response['items'][0]['statistics']
@@ -96,12 +119,13 @@ class Youtube():
             if 'commentCount' in statistics and int(statistics['commentCount']) > 0:
                 data_dict['comment_number'] = statistics['commentCount']
                 if self.data_opt['cmtOn']:  # cycle through the various comments on the video
+                    allComments = []
                     allComments.append(COMMENT_LABELS)
-                    temp_data, c_replies = self._getComments('Thread', f'videoId={video_id}')
+                    temp_data, c_replies = self._get_comments('Thread', f'videoId={video_id}')
                     allComments += temp_data
                     # comments that have more replies than can obtain via thread replies
                     for comment_id in c_replies:
-                        temp_data, _ = self._getComments('', f'parentId={comment_id}')
+                        temp_data, _ = self._get_comments('', f'parentId={comment_id}')
                         allComments += temp_data
                     #a, b = zip(*[self._getComments('', f'parentId={x}') for x in c_replies])
                     #allComments.extend([item for sublist in list(a) for item in sublist]) # flatten list
@@ -109,8 +133,10 @@ class Youtube():
             else:
                 data_dict['comment_number'] = 0
             snippet = json_response['items'][0]['snippet']
+            data_dict['title'] = snippet['title']
             data_dict['video_published'] = snippet['publishedAt']
             data_dict['description'] = snippet['description']
+            
             if 'maxres' in snippet['thumbnails']:
                 data_dict['max_thumbnail'] = snippet['thumbnails']['maxres']['url']
             elif 'standard' in snippet['thumbnails']:
@@ -134,31 +160,52 @@ class Youtube():
 
         return data_dict, allComments
 
-    # main function to get all of the data from the videos 
-    def videoData(self, videos: list) -> list:
-        final_list = []
-        for video in tqdm(videos, desc='Processing Videos'):
-            data_dict = {}
-            try:  # get title
-                data_dict['title'] = video['title']
-            except TypeError:
-                logging.debug("Getting data for a single video.")
+    def video_data(self, videos: list, desc_type: str) -> List[Dict[str, Any]]:
+        ''' main function to get all of the data from the list of videos given '''
+        final_list: List[Dict[str, Any]] = []
+        for video in tqdm(videos, desc=f'Processing {desc_type}'):
+            data_dict: Dict[str, Any] = {}
+            if 'id' in video.attrs and 'title' not in video.attrs: # element is a valid element, but doesn't have info in it # TODO CHECK for single video that has aria-label
+                continue
 
             try:  # get video url + use id for youtube API
-                vid_id = getLinkID(video['href'])
-            except:
+                vid_id = get_link_id(video['href'])
+            except Exception:
                 pattern = re.compile(r'{"videoId":".{1,20}"}', re.MULTILINE | re.DOTALL)
                 script = video.find('script', text=pattern)
-                vid_id = json.loads(re.search(pattern, script.string).group(0))['videoId']
+                vid_id = json.loads(re.search(pattern, script.string)[0])['videoId']
             if self.data_opt['subOn']:
-                data_dict['captions'] = getCaptions(vid_id)
+                data_dict['captions'] = get_captions(vid_id)
             data_dict['video_url'] = f'https://www.youtube.com/watch?v={vid_id}'
             try:
-                data_dict, data_dict['comments'] = self._youtubeAPI(vid_id, data_dict)
+                data_dict, data_dict['comments'] = self._youtube_api(vid_id, data_dict)
+                if not data_dict['comments']: # remove comments column if no comments
+                    del data_dict['comments']
             except ValueError:  # for exceeding api quota
                 final_list.append(data_dict)
                 logging.info('\nquota reached')
                 break
             final_list.append(data_dict)
         return final_list
-    
+
+    # BELOW FUNC for testing currently + using in case selenium unable to load vids on channel and self get links
+    def video_data_from_link(self, videos: list, desc_type: str) -> List[Dict[str, Any]]:
+        ''' main function to get all of the data from the list of videos given '''
+        final_list: List[Dict[str, Any]] = []
+        for video in tqdm(videos, desc=f'Processing {desc_type}'):
+            data_dict: Dict[str, Any] = {}
+            vid_id = get_link_id(video)
+
+            if self.data_opt['subOn']:
+                data_dict['captions'] = get_captions(vid_id)
+            data_dict['video_url'] = f'https://www.youtube.com/watch?v={vid_id}'
+            try:
+                data_dict, data_dict['comments'] = self._youtube_api(vid_id, data_dict)
+                if not data_dict['comments']: # remove comments column if no comments
+                    del data_dict['comments']
+            except ValueError:  # for exceeding api quota
+                final_list.append(data_dict)
+                logging.info('\nquota reached')
+                break
+            final_list.append(data_dict)
+        return final_list
