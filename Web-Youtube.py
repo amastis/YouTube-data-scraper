@@ -33,8 +33,9 @@ def scroll_selenium(driver, scroll_amnt: int, description: str) -> None:
         sleep(3)
 
 def load_and_navigate(driver, channel_link: str, page_type: str, load_amnt: int, num_shorts: int) -> None:
-    driver.get(f'{channel_link}{page_type}')
-    sleep(5) # replace w/ wait function till elements are visible
+    if page_type != 'playlist':
+        driver.get(f'{channel_link}{page_type}')
+        sleep(5) # replace w/ wait function till elements are visible
     # 48 videos load at a time
     scroll_selenium(driver, abs(num_shorts) // load_amnt + 1, f'Navigating {page_type}') # get all of type
 
@@ -71,6 +72,7 @@ def main() -> None:
         title_id: str = 'video-title'  # default is for channels
         user_id: str = ''
         channel_link: str = ''
+        desc_type: str = '' # switch between channel or playlist
         split_link: List[str] = []
         num_videos: int = 0 # for channels
         videos_flag, shorts_flag, live_flag = False, False, False # for channels
@@ -96,14 +98,18 @@ def main() -> None:
             for item in driver.find_element(By.ID, 'tabsContent').find_elements(By.TAG_NAME, 'tp-yt-paper-tab'):
                 if 'VIDEOS' in item.text:
                     videos_flag = True
+                    desc_type = 'videos'
                 elif 'SHORTS' in item.text:
                     shorts_flag = True
                 elif 'LIVE' in item.text:
                     live_flag = True
         elif 'list=' in yt_link:  # Playlists - if its a video in a playlist or the full playlist
             driver.get(f'https://www.youtube.com/playlist?list={get_link_id(yt_link, "list=")}')
+            sleep(5) # TODO remove this for wait element
             title = f"{driver.find_elements(By.CLASS_NAME, 'ytd-playlist-header-renderer')[1].find_element(By.ID, 'container').text}.csv"
             vids: int = int(driver.find_element(By.CLASS_NAME, 'byline-item').find_elements(By.TAG_NAME, 'span')[0].text)
+            videos_flag = True
+            desc_type = 'playlist'
             #title = f"{driver.find_elements(By.TAG_NAME, 'h1')[1].text}.csv"
             #vids: str = driver.find_element(By.ID, 'stats').find_elements(By.TAG_NAME, 'span')[0].text
             scroll_amnt = ceil(int(vids) / 100) + 1
@@ -120,13 +126,10 @@ def main() -> None:
             supported_styles(yt_link)
             continue
 
-        #scroll_selenium(driver, scroll_amnt, 'Navigating Youtube') # get all the channels videos
-
-        #soup = BeautifulSoup(driver.page_source, 'html.parser')
         final_list: List[Dict[str, Any]] = []
         if not single_video:  # channel, homepage, and search + playlists
-            if videos_flag:
-                final_list.extend(get_content(driver, scraper, channel_link, 'videos', 30, num_videos, {'id': title_id})) # TODO change load_amnt 
+            if videos_flag: # desc_type for videos and playlists
+                final_list.extend(get_content(driver, scraper, channel_link, desc_type, 30, num_videos, {'id': title_id})) # TODO change load_amnt 
             if shorts_flag:
                 num_others = num_videos - len(final_list) + 1 # 1 for extra row headers
                 final_list.extend(get_content(driver, scraper, channel_link, 'shorts', 48, num_others, {'class': 'ytd-rich-grid-slim-media'}))
@@ -151,17 +154,17 @@ def main() -> None:
     driver.close()
 
 # BELOW FUNC only for testing 
-def test():
+def test(title: str = 'PLACEHOLDER'):
     #import link_file
     yt_link, api_key, data_opt = get_commands() # data_opt = [cmtOn, subOn, secOn]
     api_key: str = f'&key={api_key}'
     scraper: Youtube = Youtube(api_key, data_opt)
     
     final_list: List[Dict[str, Any]] = []
-    final_list = scraper.video_data_from_link(after_date.test, 'Videos')
+    final_list = scraper.video_data_from_link(link_file.test, 'Videos')
 
     # put data into a CSV file + download to downloads folder
-    title = 'PLACEHOLDER.csv'
+    title = f'{title}.csv'
     youtube_df = pd.DataFrame(final_list)
     youtube_df.to_csv(str(Path.home() / "Downloads" / title.replace('/', '')), index=False)
     print(f'\nDownloaded: {title}')
