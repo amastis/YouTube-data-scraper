@@ -10,7 +10,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+#from webdriver_manager.chrome import ChromeDriverManager # pre chrome v.115
 from bs4 import BeautifulSoup
 import pandas as pd
 from tqdm import trange  # progress bars
@@ -61,7 +61,8 @@ def main() -> None:
     chrome_options.add_argument('--blink-settings=imagesEnabled=false')
     os.environ['WDM_LOG_LEVEL'] = "0" # to remove startup logs
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager(log_level=0).install()), options=chrome_options)
+    #driver = webdriver.Chrome(service=Service(ChromeDriverManager(log_level=0).install()), options=chrome_options) # pre Chrome v.115
+    driver = webdriver.Chrome(service=Service(), options=chrome_options)
 
     for yt_link in all_links: # for multiple links inserted
         print(yt_link, '')
