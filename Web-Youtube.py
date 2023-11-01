@@ -96,13 +96,14 @@ def main() -> None:
             sleep(5) # TODO remove this for wait element
             title = driver.find_element(By.XPATH, '//*[@id="text-container"]').text + '.csv'
             # types of videos on the channel
-            for item in driver.find_element(By.ID, 'tabsContent').find_elements(By.TAG_NAME, 'tp-yt-paper-tab'):
-                if 'VIDEOS' in item.text:
+            for item in driver.find_element(By.ID, 'tabsContent').find_elements(By.TAG_NAME, 'yt-tab-shape'):
+                item_text = item.text.lower()
+                if 'videos' in item_text:
                     videos_flag = True
                     desc_type = 'videos'
-                elif 'SHORTS' in item.text:
+                elif 'shorts' in item_text:
                     shorts_flag = True
-                elif 'LIVE' in item.text:
+                elif 'live' in item_text:
                     live_flag = True
         elif 'list=' in yt_link:  # Playlists - if its a video in a playlist or the full playlist
             driver.get(f'https://www.youtube.com/playlist?list={get_link_id(yt_link, "list=")}')
@@ -140,7 +141,7 @@ def main() -> None:
 
         else:  # single video
             soup = BeautifulSoup(driver.page_source, 'html.parser')
-            title = soup.find('meta', {'name': 'title'})['content'] + '.csv'
+            title = soup.find('meta', {'name': 'title'})['content'] + '.csv' # TODO title is no longer shown in soup file
             final_list = scraper.video_data([soup], 'Video')
             # make comments their own items in table
             if data_opt['cmtOn']:
