@@ -64,6 +64,14 @@ def main() -> None:
     #driver = webdriver.Chrome(service=Service(ChromeDriverManager(log_level=0).install()), options=chrome_options) # pre Chrome v.115
     driver = webdriver.Chrome(service=Service(), options=chrome_options)
 
+    ''' # for EU which has cookies 
+    driver.get(all_links[0])
+    sleep(5)
+    # click cookies
+    driver.find_elements(By.TAG_NAME, 'button')[6].click() # currently button is in location 6/7
+    sleep(5) # wait for redirect
+    '''
+    
     for yt_link in all_links: # for multiple links inserted
         print(yt_link, '')
         scroll_amnt: int = 5  # arbitrary number for homepage/search -- get user number to override?
