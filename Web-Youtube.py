@@ -152,7 +152,7 @@ def main() -> None:
             title = soup.find('meta', {'name': 'title'})['content'] + '.csv' # TODO title is no longer shown in soup file
             final_list = scraper.video_data([soup], 'Video')
             # make comments their own items in table
-            if data_opt['cmtOn']:
+            if data_opt['cmtOn'] and 'comments' in final_list[0] and len(final_list[0]['comments']) > 1: # checking there are comments
                 final_list[0].update(dict(zip(COMMENT_LABELS, final_list[0]['comments'][1])))
                 final_list.extend([dict(zip(COMMENT_LABELS, x)) for x in final_list[0]['comments'][2:]])
                 del final_list[0]['comments']
