@@ -170,10 +170,15 @@ class Youtube():
 
             try:  # get video url + use id for youtube API
                 vid_id = get_link_id(video['href'])
-            except Exception:
+            except Exception: # for single videos exception handling
+                '''
                 pattern = re.compile(r'{"videoId":".{1,20}"}', re.MULTILINE | re.DOTALL)
                 script = video.find('script', text=pattern)
                 vid_id = json.loads(re.search(pattern, script.string)[0])['videoId']
+                '''
+                video_url = video.find('meta', property='og:url', content=True)['content'] # IF NoneType here --> video no longer exists either (deleted, private)
+                vid_id = get_link_id(video_url)
+
             if self.data_opt['subOn']:
                 data_dict['captions'] = get_captions(vid_id)
             data_dict['video_url'] = f'https://www.youtube.com/watch?v={vid_id}'
