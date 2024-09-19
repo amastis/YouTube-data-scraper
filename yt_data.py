@@ -1,13 +1,15 @@
 ''' get and parse all of youtube request/response cycle asked for by user '''
 import json
+from json import JSONDecodeError
 import logging
 import re
-from typing import Tuple, List, Dict, Any
+from typing import Tuple, List, Dict, Any, Union
 
 # other modules
 import isodate
 import requests
 from youtube_transcript_api import YouTubeTranscriptApi
+import yt_dlp
 from tqdm import tqdm  # progress bars
 
 logging.basicConfig(format='%(levelname)s - %(name)s - %(message)s') #, level=logging.DEBUG)
@@ -42,14 +44,84 @@ def get_link_id(yt_link: str, split_by: str = 'v=') -> str:
 
     return meta[-1].split(split_by)[-1]
 
+def get_caption_str(json_data, language: str) -> str:
+    if language not in json_data['automatic_captions']:
+        #print('NO CAPTIONS', json_data)
+        return ''
+
+    try:
+        caption_url: str = [item['url'] for item in json_data['automatic_captions'][language] if item['ext'] == 'json3'][0]
+    except IndexError:
+        return ''
+    if not caption_url:
+        #print('NO JSON URL', json_data)
+        return ''
+    
+    response_captions = None
+    try:
+        response_captions = requests.get(caption_url)
+    except:
+        print('failed', caption_url) # to diagnose other issues
+
+    if not response_captions:
+        return ''
+
+    try:
+        automated_captions_dict = response_captions.json()
+    except (JSONDecodeError, ValueError) as e:
+        print('FAILED', caption_url)
+        return ''
+
+    captions_list: List[str] = []
+    for item in automated_captions_dict['events']:
+        if 'segs' not in item:
+            continue
+        captions_list.extend([seg['utf8'] for seg in item['segs'] if seg['utf8'] != '\n'])
+    
+    return ''.join(captions_list)
+
+def get_automated_captions(video_id: str, language: str = 'en') -> str:
+    URL: str = f'https://www.youtube.com/watch?v={video_id}'
+
+    # ℹ️ See help(yt_dlp.YoutubeDL) for a list of available options and public functions
+    ydl_opts: Dict[str, Union[str, List[str], bool]] = {
+        'subtitleslangs': [language],
+        'skip_download': True,
+        'subtitlesformat': 'json3',
+        'writeautomaticsub': True,
+        'outtmpl': '/tmp/sub.json',
+        # https://github.com/yt-dlp/yt-dlp/issues/10128
+        'sleep-interval': 60, # ADDED sleep intervals 
+        'min-sleep-interval': 60,
+        'max-sleep-interval': 90,
+    }
+    link_to_download: str = ''
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            info = ydl.extract_info(URL, download=False)
+        except Exception as e: # yt_dlp.utils.DownloadError
+            print(e)
+            return ''
+
+        # ℹ️ ydl.sanitize_info makes the info json-serializable
+        link_to_download = ydl.sanitize_info(info)
+        #print(link_to_download)
+    
+    return get_caption_str(link_to_download, language)
+
 def get_captions(vid_id: str) -> str:
     ''' gets the subtitles / captions from the video that's already generated '''
     try:
         captions: List[Dict[str, str]] = YouTubeTranscriptApi.get_transcript(vid_id)
     except Exception:  # no transcript for video
-        return ""
-    return " ".join([item['text'] for item in captions])
+        captions = []
 
+    if not captions:
+        return '', get_automated_captions(vid_id)
+
+    return [str(item['start'] - item['duration']) for item in captions], [item['text'] for item in captions]
+    #return " ".join([item['text'] for item in captions])
 
 class Youtube():
     ''' Interact with the YouTube API to retrive info about the list of videos (by ID) given '''
