@@ -92,7 +92,7 @@ def main() -> None:
             if '/user/' not in yt_link:
                 driver.get(yt_link)
                 sleep(5) # TODO remove this for wait element
-                channel: str = driver.find_element(By.XPATH, '/html/body/link[1]').get_attribute('href')
+                channel: str = driver.find_element(By.XPATH, '//link[@itemprop="url"]').get_attribute('href')
                 user_or_channel += get_link_id(channel, '/')
             json_response = scraper.yt_json('channels', 'part=id,statistics', user_or_channel)
             num_videos = int(json_response['items'][0]['statistics']['videoCount'])
