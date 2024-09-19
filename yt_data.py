@@ -94,6 +94,9 @@ def get_automated_captions(video_id: str, language: str = 'en') -> str:
         'sleep-interval': 60, # ADDED sleep intervals 
         'min-sleep-interval': 60,
         'max-sleep-interval': 90,
+        # https://stackoverflow.com/questions/65000801/how-to-hide-the-output-of-yt-dl-in-cmd-python
+        'quiet': True,
+        'external_downloader_args': ['-loglevel', 'panic'],
     }
     link_to_download: str = ''
 
