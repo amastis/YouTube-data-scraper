@@ -6,3 +6,4 @@ selenium==3.141.0
 tqdm==4.62.3
 webdriver-manager==3.2.2
 youtube-transcript-api==0.4.1
+yt-dlp==2023.3.4
