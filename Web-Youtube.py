@@ -102,7 +102,7 @@ def main() -> None:
             if '/@' in yt_link:
                 title_id = 'video-title-link'
             sleep(5) # TODO remove this for wait element
-            title = driver.find_element(By.XPATH, '//*[@id="text-container"]').text + '.csv'
+            title = driver.find_elements(By.ID, 'channel-name')[1].text + '.csv'
             # types of videos on the channel
             for item in driver.find_element(By.ID, 'tabsContent').find_elements(By.TAG_NAME, 'yt-tab-shape'):
                 item_text = item.text.lower()
@@ -142,7 +142,7 @@ def main() -> None:
                 final_list.extend(get_content(driver, scraper, channel_link, desc_type, 30, num_videos, {'id': title_id})) # TODO change load_amnt 
             if shorts_flag:
                 num_others = num_videos - len(final_list) + 1 # 1 for extra row headers
-                final_list.extend(get_content(driver, scraper, channel_link, 'shorts', 48, num_others, {'class': 'ytd-rich-grid-slim-media'}))
+                final_list.extend(get_content(driver, scraper, channel_link, 'shorts', 48, num_others, {'class': 'reel-item-endpoint'}))
             if live_flag:
                 num_others = num_videos - len(final_list) + 1 # 1 for extra row headers
                 final_list.extend(get_content(driver, scraper, channel_link, 'streams', 24, num_others, {'id': title_id}))
