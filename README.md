@@ -15,7 +15,7 @@ $ python3 main.py -h
 Works with: YouTube Homepage, youtube search, channel/user, video, and playlists
 
 
-Usage: Web-Youtube.py [OPTIONS]
+Usage: main.py [OPTIONS]
 	--link		 	YouTube link(s)
 	--api	 		Google/YouTube API key
 	--comments		Get comments from YouTube videos
