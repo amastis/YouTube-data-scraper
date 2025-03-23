@@ -33,7 +33,7 @@ def usage() -> None:
     print("\t--help          \tThis help menu\n")
 
     print("Example:")
-    print(f"\t{sys.argv[0]} --link [youtube_link] --api [your_api_key] --comments --subtitles --durationseconds")
+    print(f"\t{sys.argv[0]} --link [youtube_link] --api [your_api_key] --comments --subtitles --playlists --durationseconds")
     supported_styles()
     sys.exit(1)
 
