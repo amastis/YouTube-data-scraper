@@ -34,6 +34,16 @@ def _comment_data(item: dict, comment_data: dict, parent: str) -> List[str]:
             comment_data['updatedAt'],
             parent]
 
+def playlist_info(playlist_item: Dict[str, Any]) -> Dict[str, str]:
+    playlist_snippet: Dict[str, Any] = playlist_item['snippet']
+    return {
+        'url': f'https://www.youtube.com/playlist?list={playlist_item["id"]}',
+        'channel': f'https://www.youtube.com/channel/{playlist_snippet["channelId"]}',
+        'playlist_published': playlist_snippet['publishedAt'],
+        'title': playlist_snippet['title'],
+        'description': playlist_snippet['description'],
+    }
+
 def get_link_id(yt_link: str, split_by: str = 'v=') -> str:
     ''' returns the link ID from the youtube link given '''
     meta = yt_link.split('?')
@@ -126,6 +136,7 @@ def get_captions(vid_id: str) -> str:
     return [str(item['start'] - item['duration']) for item in captions], [item['text'] for item in captions]
     #return " ".join([item['text'] for item in captions])
 
+
 class Youtube():
     ''' Interact with the YouTube API to retrive info about the list of videos (by ID) given '''
     def __init__(self, api_key: str, data_options: Dict[str, bool]):
@@ -147,22 +158,28 @@ class Youtube():
             return self.yt_json(directory, parts, item_id, new_page_token)
         return json_response
 
+    def _get_all_json_pages(self, directory: str, parts: str, item_id: str) -> List[Dict[str, Any]]:
+        json_data: List[Dict[str, Any]] = []
+        next_pg: str = ''
+        while True:  # or 'nextPageToken' in json_comments:
+            json_response = self.yt_json(directory, parts, item_id, next_pg)
+            if 'items' in json_response:
+                json_data += json_response['items']
+            else:
+                print(json_response) # prints errors -> TRY to handle better
+            if 'nextPageToken' not in json_response:  # exit loop condition
+                break
+            next_pg = json_response['nextPageToken']
+        return json_data
+
     # get commentThreads and comment replies from the video
     def _get_comments(self, d_type: str, vid_type: str, parts: str = 'part=snippet', parent: str = 'id') -> Tuple[list, list]:
         ''' get commentThreads and comment replies from the video '''
-        is_thread, next_pg = d_type == 'Thread', ''
+        is_thread: bool = d_type == 'Thread'
         if is_thread:
             parts, parent = f'{parts},replies', 'id'
         all_comments, comments_with_replies, json_data = [], [], []
-        while True:  # or 'nextPageToken' in json_comments:
-            json_comments = self.yt_json(f'comment{d_type}s', parts, vid_type, next_pg)
-            if 'items' in json_comments:
-                json_data += json_comments['items']
-            else:
-                print(json_comments) # prints errors -> TRY to handle better
-            if 'nextPageToken' not in json_comments:  # exit loop condition
-                break
-            next_pg = json_comments['nextPageToken']
+        json_data = self._get_all_json_pages(f'comment{d_type}s', parts, vid_type)
         for item in json_data:
             cData = item['snippet']  # comments
             if is_thread:
@@ -234,6 +251,46 @@ class Youtube():
                 data_dict['video_topics'] = json_response['items'][0]['topicDetails']['topicCategories']
 
         return data_dict, allComments
+
+    def playlist_videos_list(self, channel_id: str) -> List[Dict[str, Any]]:
+        # API - get playlists associated with account
+        # https://developers.google.com/youtube/v3/docs/playlists/list
+        playlists: List[Dict[str, Any]] = self._get_all_json_pages('playlists', 'part=contentDetails,snippet', f'channelId={channel_id}&maxResults=50')
+        
+        video_playlist_pairs: Dict[str, List[Any]] = {}
+
+        ''' # TODO pass in driver to the function to use selenium instead
+        # use selenium to go through each of the pages - to get the video links
+        for item in playlists:
+            playlist_url: str = f'https://www.youtube.com/playlist?list={item["id"]}'
+            driver.get(playlist_url)
+            scroll_selenium(driver, int(item['contentDetails']['itemCount'] / 100) + 1, f'searching playlist: {playlist_url}')
+            videos = driver.find_elements(By.CLASS_NAME, 'ytd-thumbnail') # TODO get all of the video ids
+            
+            for video in videos:
+                link: str = video.get_attribute('href')
+                if not link or '&list=' not in link:
+                    continue
+
+                video_id: str = link.split('&list=')[0][32:]
+                if video_id in video_playlist_pairs:
+                    video_playlist_pairs[video_id].append(item) # TODO what specific info to prune into?
+                else:
+                    video_playlist_pairs[video_id] = [item] # TODO what specific info to prune into?
+        '''
+
+        # playlist api to go through each of the pages - to get the video ids and append playlist info
+        for item in playlists:
+            playlist_videos: List[Dict[str, Any]] = self._get_all_json_pages('playlistItems', 'part=contentDetails', f'playlistId={item["id"]}&maxResults=50')
+            for video in playlist_videos:
+                video_id: str = video['contentDetails']['videoId']
+                if video_id in video_playlist_pairs:
+                    video_playlist_pairs[video_id].append(playlist_info(item))
+                else:
+                    video_playlist_pairs[video_id] = [playlist_info(item)]
+
+        # format playlist pairs to be in {'url': str, 'playlist_info': List[Dict[str, str]]} fromat
+        return [{'video_url': f'https://www.youtube.com/watch?v={video_id}', 'playlist_info': playlist_info} for video_id, playlist_info in video_playlist_pairs.items()]
 
     def video_data(self, videos: list, desc_type: str) -> List[Dict[str, Any]]:
         ''' main function to get all of the data from the list of videos given '''
