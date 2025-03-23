@@ -3,7 +3,7 @@ import sys
 import getopt  # change to argparse
 from typing import Optional, Tuple, Dict, List
 
-VERSION = "1.0"
+VERSION = "1.1"
 
 def supported_styles(link: Optional[str] = None) -> None:
     ''' shows supported url styles in terminal '''
@@ -27,7 +27,8 @@ def usage() -> None:
     print("\t--comments		Get comments from YouTube videos")
     print("\t\t\t\t   [turning on will increase program run time]")
     print("\t--subtitles		Get subtitles from YouTube videos")
-    print("\t--durationseconds	Get seconds from YouTube video duration")
+    print("\t--playlists        Get playlists of a YouTube Channel and show the playlist(s) a  video belongs to")
+    print("\t--durationseconds	Get seconds of YouTube video duration (instead of ISO 8601 duration)")
     print("\t--version       \tList version release")
     print("\t--help          \tThis help menu\n")
 
@@ -44,10 +45,11 @@ def get_commands() -> Tuple[str, str, Dict[str, bool]]:
     comments_on: bool = False
     subtitiles_on: bool = False
     seconds_on: bool = False
-    args_values: List[str] = ["link=", "api=", "comments", "subtitles", "durationseconds", "help", "version"]
+    playlists_on: bool = False
+    args_values: List[str] = ["link=", "api=", "comments", "subtitles", "playlists", "durationseconds", "help", "version"]
 
     try:
-        opts, _ = getopt.getopt(sys.argv[1:], "l:a:csdhv", args_values)
+        opts, _ = getopt.getopt(sys.argv[1:], "l:a:cspdhv", args_values)
     except getopt.GetoptError as err: # print help information and exit:
         print(err) # will print something like "option -a not recognized"
         sys.exit(-1)
@@ -61,6 +63,8 @@ def get_commands() -> Tuple[str, str, Dict[str, bool]]:
             comments_on = True
         elif option in ("-s", "--subtitles"):
             subtitiles_on = True
+        elif option in ("-p", "--playlists"):
+            playlists_on = True
         elif option in ("-d", "--durationseconds"):
             seconds_on = True
         elif option in ("-h", "--help"):
@@ -75,6 +79,6 @@ def get_commands() -> Tuple[str, str, Dict[str, bool]]:
 
     if not api_key or not youtube_link or 'www.youtube.com' not in youtube_link:
         usage()
-    options = {'cmtOn': comments_on, 'subOn': subtitiles_on, 'secOn': seconds_on}
+    options = {'cmtOn': comments_on, 'subOn': subtitiles_on, 'playOn': playlists_on, 'secOn': seconds_on}
 
     return youtube_link, api_key, options
