@@ -11,7 +11,7 @@ $ pip3 install -r requirements.txt
 ## Help Menu
 
 ```bash
-$ python3 Web-Youtube.py -h
+$ python3 main.py -h
 Works with: YouTube Homepage, youtube search, channel/user, video, and playlists
 
 
@@ -21,12 +21,13 @@ Usage: Web-Youtube.py [OPTIONS]
 	--comments		Get comments from YouTube videos
 				   [turning on will increase program run time]
 	--subtitles		Get subtitles from YouTube videos
-	--durationseconds	Get seconds from YouTube video duration
+	--playlists		Get playlists of a YouTube Channel and show the playlist(s) a video belongs to
+	--durationseconds	Get seconds of YouTube video duration (instead of ISO 8601 duration)
 	--version       	List version release
 	--help          	This help menu
 
 Example:
-	Web-Youtube.py --link "[your_youtube_link(s)]" --api [your_api_key] --comments --subtitles --durationseconds
+	Web-Youtube.py --link "[your_youtube_link(s)]" --api [your_api_key] --comments --subtitles --playlists --durationseconds
 
 Supported YouTube Link Styles:
 	https://www.youtube.com/
@@ -42,7 +43,7 @@ Supported YouTube Link Styles:
 ## Sample Output
 
 ```bash
-$ python3 Web-Youtube.py --link "https://www.youtube.com/watch?v=x9dgZQsjR6s" --api 6d5f807e23db210bc254a28be2d6759a0f5f5d99 --comments
+$ python3 main.py --link "https://www.youtube.com/watch?v=x9dgZQsjR6s" --api 6d5f807e23db210bc254a28be2d6759a0f5f5d99 --comments
 
 Navigating Youtube: |██████████████████████████████████████████████████| 100.0% 
 Processing Videos: |██████████████████████████████████████████████████| 100.0% 
